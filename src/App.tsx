@@ -11,6 +11,7 @@ import Gigs from "./pages/Gigs";
 import GigDetail from "./pages/GigDetail";
 import AILearningPath from "./pages/AILearningPath";
 import Auth from "./pages/Auth";
+import Projects from "./pages/Projects";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,11 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/gigs" element={<Gigs />} />
             <Route path="/gig/:id" element={<GigDetail />} />
+            <Route path="/projects" element={
+              <ProtectedRoute>
+                <Projects />
+              </ProtectedRoute>
+            } />
             <Route path="/ai-path" element={
               <ProtectedRoute>
                 <AILearningPath />
