@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
@@ -23,7 +24,7 @@ const gigDetails = {
     students: 1432,
   },
   rating: 4.9,
-  reviews: 87,
+  reviewCount: 87,
   price: 119.99,
   duration: "8 weeks",
   level: "Intermediate",
@@ -59,7 +60,7 @@ const gigDetails = {
       duration: "5 hours",
     },
   ],
-  reviews: [
+  reviewItems: [
     {
       id: 1,
       user: "Michael P.",
@@ -97,7 +98,7 @@ const GigDetail = () => {
               <div className="flex items-center">
                 <Star className="fill-yellow-400 stroke-yellow-400 w-5 h-5" />
                 <span className="ml-1 font-medium">{gig.rating}</span>
-                <span className="text-gray-500 ml-1">({gig.reviews} reviews)</span>
+                <span className="text-gray-500 ml-1">({gig.reviewCount} reviews)</span>
               </div>
               <span className="text-gray-500">•</span>
               <span className="text-gray-700">{gig.level} level</span>
@@ -222,12 +223,12 @@ const GigDetail = () => {
                   <div className="flex items-center">
                     <Star className="fill-yellow-400 stroke-yellow-400 w-5 h-5" />
                     <span className="ml-1 font-medium text-lg">{gig.rating}</span>
-                    <span className="text-gray-500 ml-1">({gig.reviews} reviews)</span>
+                    <span className="text-gray-500 ml-1">({gig.reviewCount} reviews)</span>
                   </div>
                 </div>
                 
                 <div className="space-y-6">
-                  {gig.reviews.map((review) => (
+                  {gig.reviewItems.map((review) => (
                     <div key={review.id} className="pb-6 border-b border-gray-200 last:border-0">
                       <div className="flex justify-between items-start mb-2">
                         <div className="font-medium">{review.user}</div>
