@@ -15,11 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Layout from "@/components/layout/Layout";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const { signIn, signUp, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   
   const [authData, setAuthData] = useState({
     email: "",
@@ -34,20 +36,49 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Sign in attempt with:", authData.email);
+    
+    if (!authData.email || !authData.password) {
+      toast({
+        title: "Missing information",
+        description: "Please enter both email and password",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       await signIn(authData.email, authData.password);
+      console.log("Sign in successful, navigating to:", from);
       navigate(from, { replace: true });
     } catch (error) {
       console.error("Sign in error:", error);
+      // Error handling is already in the useAuth hook
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Sign up attempt with:", authData.email);
+    
+    if (!authData.email || !authData.password) {
+      toast({
+        title: "Missing information",
+        description: "Please enter both email and password",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       await signUp(authData.email, authData.password);
+      toast({
+        title: "Check your email",
+        description: "We've sent you a confirmation link. Please check your email and follow the instructions.",
+      });
     } catch (error) {
       console.error("Sign up error:", error);
+      // Error handling is already in the useAuth hook
     }
   };
 
