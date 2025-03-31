@@ -17,9 +17,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Layout from "@/components/layout/Layout";
 import { useToast } from "@/hooks/use-toast";
 import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Auth = () => {
-  const { signIn, signUp, loading } = useAuth();
+  const { signIn, signUp, loading, emailConfirmationRequired } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -30,6 +31,7 @@ const Auth = () => {
   });
   
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("signin");
   
   const from = (location.state as any)?.from?.pathname || "/";
 
@@ -76,6 +78,7 @@ const Auth = () => {
     try {
       await signUp(authData.email, authData.password);
       setSignupSuccess(true);
+      setActiveTab("success");
     } catch (error) {
       console.error("Sign up error:", error);
       // Error handling is already in the useAuth hook
@@ -86,7 +89,7 @@ const Auth = () => {
     <Layout>
       <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
         <Card className="w-full max-w-md">
-          <Tabs defaultValue={signupSuccess ? "success" : "signin"}>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <CardHeader>
               {!signupSuccess ? (
                 <TabsList className="grid w-full grid-cols-2">
@@ -95,7 +98,10 @@ const Auth = () => {
                 </TabsList>
               ) : (
                 <div className="flex justify-center">
-                  <Button variant="ghost" onClick={() => setSignupSuccess(false)}>
+                  <Button variant="ghost" onClick={() => {
+                    setActiveTab("signin");
+                    setSignupSuccess(false);
+                  }}>
                     Back to Sign In
                   </Button>
                 </div>
@@ -108,6 +114,17 @@ const Auth = () => {
             </CardHeader>
             
             <CardContent>
+              {emailConfirmationRequired && (
+                <Alert className="mb-4" variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Email confirmation required</AlertTitle>
+                  <AlertDescription>
+                    You need to confirm your email before you can sign in.
+                    Check your inbox and spam folder for a confirmation link.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn}>
                   <div className="space-y-4">
@@ -191,8 +208,7 @@ const Auth = () => {
                         You need to confirm your email before you can sign in.
                       </p>
                       <p className="mt-2">
-                        If you don't see the email, check your spam folder. For testing purposes,
-                        you can also disable email confirmation in the Supabase dashboard.
+                        If you don't see the email, check your spam folder.
                       </p>
                     </div>
                   </div>
@@ -200,8 +216,8 @@ const Auth = () => {
                     variant="outline" 
                     className="w-full"
                     onClick={() => {
+                      setActiveTab("signin");
                       setSignupSuccess(false);
-                      setAuthData({ email: "", password: "" });
                     }}
                   >
                     Return to Sign In

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +10,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
+  emailConfirmationRequired: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -69,10 +70,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      toast({
-        title: "Account created",
-        description: "Check your email for the confirmation link.",
-      });
+      // If no session is created, email confirmation is required
+      if (!data.session) {
+        setEmailConfirmationRequired(true);
+        toast({
+          title: "Account created",
+          description: "Check your email for the confirmation link before signing in.",
+        });
+      } else {
+        // User was automatically signed in (email confirmation disabled)
+        toast({
+          title: "Account created",
+          description: "You have been automatically signed in.",
+        });
+      }
     } catch (error) {
       console.error("Sign up error:", error);
       throw error;
@@ -89,11 +100,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (error) {
         console.error("Sign in error from Supabase:", error);
-        toast({
-          title: "Sign in failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        
+        // Special handling for unconfirmed emails
+        if (error.message === "Invalid login credentials") {
+          // Check if the user exists but hasn't confirmed their email
+          const { data: checkData } = await supabase.auth.signUp({ email, password });
+          
+          if (checkData.user && checkData.user.identities && checkData.user.identities.length === 0) {
+            // User exists but email might not be confirmed
+            toast({
+              title: "Email confirmation required",
+              description: "Please check your email and confirm your account before signing in. Check your spam folder if you can't find the email.",
+              variant: "destructive",
+            });
+            setEmailConfirmationRequired(true);
+            return;
+          } else {
+            // Regular invalid credentials
+            toast({
+              title: "Sign in failed",
+              description: "Invalid email or password. Please try again.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          // Other errors
+          toast({
+            title: "Sign in failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
         throw error;
       }
       
@@ -131,7 +168,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, signUp, signIn, signOut, loading }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user, 
+      signUp, 
+      signIn, 
+      signOut, 
+      loading,
+      emailConfirmationRequired 
+    }}>
       {children}
     </AuthContext.Provider>
   );
