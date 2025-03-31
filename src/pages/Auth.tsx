@@ -20,7 +20,7 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Auth = () => {
-  const { signIn, signUp, loading, emailConfirmationRequired } = useAuth();
+  const { signIn, signUp, loading, emailConfirmationRequired, authError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -114,7 +114,17 @@ const Auth = () => {
             </CardHeader>
             
             <CardContent>
-              {emailConfirmationRequired && (
+              {authError && (
+                <Alert className="mb-4" variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Authentication Error</AlertTitle>
+                  <AlertDescription>
+                    {authError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {emailConfirmationRequired && !authError && (
                 <Alert className="mb-4" variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Email confirmation required</AlertTitle>
@@ -138,6 +148,7 @@ const Auth = () => {
                         required
                         value={authData.email}
                         onChange={handleInputChange}
+                        disabled={!!authError && authError.includes("sign-ins are currently disabled")}
                       />
                     </div>
                     <div className="space-y-2">
@@ -152,11 +163,22 @@ const Auth = () => {
                         required
                         value={authData.password}
                         onChange={handleInputChange}
+                        disabled={!!authError && authError.includes("sign-ins are currently disabled")}
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={loading || (!!authError && authError.includes("sign-ins are currently disabled"))}
+                    >
                       {loading ? "Signing in..." : "Sign In"}
                     </Button>
+                    
+                    {!!authError && authError.includes("sign-ins are currently disabled") && (
+                      <div className="text-center text-sm text-destructive mt-2">
+                        Email sign-in is currently disabled. Please contact the administrator to enable it.
+                      </div>
+                    )}
                   </div>
                 </form>
               </TabsContent>
@@ -174,6 +196,7 @@ const Auth = () => {
                         required
                         value={authData.email}
                         onChange={handleInputChange}
+                        disabled={!!authError && authError.includes("sign-ups are currently disabled")}
                       />
                     </div>
                     <div className="space-y-2">
@@ -186,11 +209,22 @@ const Auth = () => {
                         required
                         value={authData.password}
                         onChange={handleInputChange}
+                        disabled={!!authError && authError.includes("sign-ups are currently disabled")}
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={loading || (!!authError && authError.includes("sign-ups are currently disabled"))}
+                    >
                       {loading ? "Creating account..." : "Sign Up"}
                     </Button>
+                    
+                    {!!authError && authError.includes("sign-ups are currently disabled") && (
+                      <div className="text-center text-sm text-destructive mt-2">
+                        Email sign-up is currently disabled. Please contact the administrator to enable it.
+                      </div>
+                    )}
                   </div>
                 </form>
               </TabsContent>

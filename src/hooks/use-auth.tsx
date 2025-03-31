@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   loading: boolean;
   emailConfirmationRequired: boolean;
+  authError: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -46,10 +49,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string) => {
     try {
       setLoading(true);
+      setAuthError(null);
       const { data, error } = await supabase.auth.signUp({ email, password });
       
       if (error) {
         console.error("Sign up error from Supabase:", error);
+        
+        if (error.code === "email_provider_disabled") {
+          setAuthError("Email sign-ups are currently disabled. Please contact the administrator.");
+          toast({
+            title: "Sign up unavailable",
+            description: "Email sign-ups are currently disabled. Please contact the administrator.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         toast({
           title: "Sign up failed",
           description: error.message,
@@ -95,11 +110,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      setAuthError(null);
       console.log("Attempting to sign in with:", email);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
         console.error("Sign in error from Supabase:", error);
+        
+        if (error.code === "email_provider_disabled") {
+          setAuthError("Email sign-ins are currently disabled. Please contact the administrator.");
+          toast({
+            title: "Sign in unavailable",
+            description: "Email sign-ins are currently disabled. Please contact the administrator.",
+            variant: "destructive",
+          });
+          return;
+        }
         
         // Special handling for unconfirmed emails
         if (error.message === "Invalid login credentials") {
@@ -175,7 +201,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn, 
       signOut, 
       loading,
-      emailConfirmationRequired 
+      emailConfirmationRequired,
+      authError
     }}>
       {children}
     </AuthContext.Provider>
