@@ -18,86 +18,123 @@ import {
   Clock, 
   Book, 
   CheckCircle,
-  ChevronRight 
+  ChevronRight,
+  HelpCircle,
+  BookOpen,
+  Code,
+  Lightbulb
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-// Mock data for learning paths
+// Mock data for learning paths with problem-solving focus
 const mockLearningPaths = [
   {
     id: 1,
-    title: "Data Science Fundamentals",
-    description: "Master the essentials of data science from statistics to machine learning algorithms.",
-    duration: "12 weeks",
-    level: "Beginner",
+    title: "Debugging & Troubleshooting Mastery",
+    description: "Master the art of finding and fixing bugs efficiently. Learn systematic approaches to problem-solving in software development.",
+    duration: "6 weeks",
+    level: "Intermediate",
+    pathType: "problem-solving",
     steps: [
       {
-        title: "Introduction to Statistics",
+        title: "Error Analysis Fundamentals",
         gigId: 1,
-        gigTitle: "Statistics Essentials",
+        gigTitle: "Understanding Error Messages",
       },
       {
-        title: "Python for Data Analysis",
+        title: "Systematic Debugging Techniques",
         gigId: 2,
-        gigTitle: "Python Data Science Toolkit",
+        gigTitle: "Scientific Method for Debugging",
       },
       {
-        title: "Machine Learning Basics",
+        title: "Advanced Debugging Tools",
         gigId: 3,
-        gigTitle: "Introduction to Machine Learning",
+        gigTitle: "Mastering Developer Tools",
+      },
+      {
+        title: "Performance Problem Solving",
+        gigId: 4,
+        gigTitle: "Identifying & Fixing Bottlenecks",
       },
     ],
   },
   {
     id: 2,
-    title: "Web Development Journey",
-    description: "Learn full-stack web development from HTML basics to advanced React applications.",
-    duration: "16 weeks",
-    level: "Intermediate",
+    title: "Practical Problem-Solving in Web Development",
+    description: "Learn to approach real-world development challenges with confidence. Build a toolkit of strategies for solving common and complex problems.",
+    duration: "8 weeks",
+    level: "All Levels",
+    pathType: "problem-solving",
     steps: [
       {
-        title: "HTML & CSS Mastery",
-        gigId: 4,
-        gigTitle: "Modern HTML and CSS",
-      },
-      {
-        title: "JavaScript Essentials",
+        title: "Solution Architecture Basics",
         gigId: 5,
-        gigTitle: "JavaScript from Zero to Hero",
+        gigTitle: "Breaking Down Complex Problems",
       },
       {
-        title: "React Framework",
+        title: "Common Web Development Challenges",
         gigId: 6,
-        gigTitle: "React Application Development",
+        gigTitle: "Solutions to Everyday Problems",
       },
       {
-        title: "Backend with Node.js",
+        title: "User-Centered Problem Solving",
         gigId: 7,
-        gigTitle: "Building RESTful APIs with Node.js",
+        gigTitle: "Addressing User Needs & Pain Points",
+      },
+      {
+        title: "Testing & Validation Strategies",
+        gigId: 8,
+        gigTitle: "Verifying Your Solutions Work",
       },
     ],
   },
 ];
 
 const AILearningPath = () => {
-  const [interests, setInterests] = useState("");
+  const [challenge, setChallenge] = useState("");
   const [level, setLevel] = useState("beginner");
-  const [timeCommitment, setTimeCommitment] = useState("medium");
-  const [goals, setGoals] = useState("");
+  const [learningStyle, setLearningStyle] = useState("practical");
+  const [goalType, setGoalType] = useState("problem");
   const [generatedPaths, setGeneratedPaths] = useState<typeof mockLearningPaths>([]);
+  const [aiResponse, setAiResponse] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
 
   const handleGeneratePath = () => {
     setIsGenerating(true);
     
-    // Simulate AI path generation
-    setTimeout(() => {
-      setGeneratedPaths(mockLearningPaths);
-      setIsGenerating(false);
-    }, 2000);
+    // Generate learning path and practical solution
+    setTimeout(async () => {
+      try {
+        // First, set the mock paths for the UI
+        setGeneratedPaths(mockLearningPaths);
+        
+        // Then call the edge function to get a solution-oriented response
+        if (challenge) {
+          const { data, error } = await supabase.functions.invoke("generate-ai-content", {
+            body: { prompt: challenge },
+          });
+          
+          if (error) throw error;
+          
+          setAiResponse(data.content);
+        }
+      } catch (error) {
+        console.error("Error generating content:", error);
+        toast({
+          title: "Generation failed",
+          description: "Failed to generate AI content. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsGenerating(false);
+      }
+    }, 1500);
   };
 
   return (
@@ -105,9 +142,9 @@ const AILearningPath = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">AI Learning Path Generator</h1>
+            <h1 className="text-4xl font-bold mb-4">AI Problem-Solving Assistant</h1>
             <p className="text-xl text-gray-600 mb-6">
-              Tell us what you want to learn, and our AI will create a personalized learning path just for you.
+              Describe your challenge, and our AI will help with practical solutions and learning resources.
             </p>
             <div className="flex justify-center">
               <div className="p-3 rounded-full bg-brand-light">
@@ -124,22 +161,24 @@ const AILearningPath = () => {
               }}>
                 <div className="space-y-6">
                   <div>
-                    <Label htmlFor="interests" className="text-lg font-medium">
-                      What do you want to learn?
+                    <Label htmlFor="challenge" className="text-lg font-medium flex items-center">
+                      <HelpCircle className="h-5 w-5 mr-2 text-brand-blue" />
+                      What problem are you trying to solve?
                     </Label>
                     <Textarea
-                      id="interests"
-                      placeholder="E.g., Data science, web development, digital marketing..."
+                      id="challenge"
+                      placeholder="Describe your challenge, error, or topic you need help with..."
                       className="mt-2"
-                      value={interests}
-                      onChange={(e) => setInterests(e.target.value)}
+                      value={challenge}
+                      onChange={(e) => setChallenge(e.target.value)}
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <Label htmlFor="level" className="text-lg font-medium">
-                        Your experience level
+                      <Label htmlFor="level" className="text-lg font-medium flex items-center">
+                        <Target className="h-5 w-5 mr-2 text-brand-blue" />
+                        Your expertise level
                       </Label>
                       <Select value={level} onValueChange={setLevel}>
                         <SelectTrigger id="level" className="mt-2">
@@ -154,46 +193,52 @@ const AILearningPath = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="time" className="text-lg font-medium">
-                        Time commitment
+                      <Label htmlFor="style" className="text-lg font-medium flex items-center">
+                        <BookOpen className="h-5 w-5 mr-2 text-brand-blue" />
+                        Learning style
                       </Label>
-                      <Select value={timeCommitment} onValueChange={setTimeCommitment}>
-                        <SelectTrigger id="time" className="mt-2">
-                          <SelectValue placeholder="Select time commitment" />
+                      <Select value={learningStyle} onValueChange={setLearningStyle}>
+                        <SelectTrigger id="style" className="mt-2">
+                          <SelectValue placeholder="Select style" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="low">Low (2-4 hours/week)</SelectItem>
-                          <SelectItem value="medium">Medium (5-10 hours/week)</SelectItem>
-                          <SelectItem value="high">High (10+ hours/week)</SelectItem>
+                          <SelectItem value="practical">Practical (code examples)</SelectItem>
+                          <SelectItem value="conceptual">Conceptual (theory first)</SelectItem>
+                          <SelectItem value="visual">Visual (diagrams & visuals)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="goal" className="text-lg font-medium flex items-center">
+                        <Lightbulb className="h-5 w-5 mr-2 text-brand-blue" />
+                        Goal type
+                      </Label>
+                      <Select value={goalType} onValueChange={setGoalType}>
+                        <SelectTrigger id="goal" className="mt-2">
+                          <SelectValue placeholder="Select goal" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="problem">Fix a specific problem</SelectItem>
+                          <SelectItem value="learn">Learn a new concept</SelectItem>
+                          <SelectItem value="build">Build a new feature</SelectItem>
+                          <SelectItem value="optimize">Optimize existing code</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="goals" className="text-lg font-medium">
-                      Your learning goals
-                    </Label>
-                    <Textarea
-                      id="goals"
-                      placeholder="E.g., Career change, skill enhancement, personal project..."
-                      className="mt-2"
-                      value={goals}
-                      onChange={(e) => setGoals(e.target.value)}
-                    />
-                  </div>
-
                   <Button 
                     type="submit" 
                     className="w-full py-6 bg-brand-blue hover:bg-brand-dark"
-                    disabled={isGenerating}
+                    disabled={isGenerating || !challenge.trim()}
                   >
                     {isGenerating ? (
-                      <>Generating Your Path...</>
+                      <>Analyzing Your Challenge...</>
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-5 w-5" />
-                        Generate Learning Path
+                        Generate Solutions
                       </>
                     )}
                   </Button>
@@ -202,13 +247,32 @@ const AILearningPath = () => {
             </CardContent>
           </Card>
 
+          {aiResponse && (
+            <Card className="mb-8 border-2 border-green-100">
+              <CardContent className="p-6">
+                <div className="flex items-center mb-4">
+                  <Code className="h-6 w-6 text-brand-blue mr-2" />
+                  <h2 className="text-2xl font-bold">Practical Solution</h2>
+                </div>
+                <div className="bg-gray-50 p-5 rounded-lg mb-4">
+                  <pre className="whitespace-pre-wrap text-sm font-mono">{aiResponse}</pre>
+                </div>
+                <p className="text-sm text-gray-500 italic">
+                  This solution is generated based on your specific challenge and expertise level.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {generatedPaths.length > 0 && (
             <>
               <div className="mb-8">
-                <h2 className="text-2xl font-bold mb-6">Your Personalized Learning Paths</h2>
+                <h2 className="text-2xl font-bold mb-6 flex items-center">
+                  <BookOpen className="h-6 w-6 mr-2 text-brand-blue" />
+                  Recommended Learning Resources
+                </h2>
                 <p className="text-gray-600 mb-6">
-                  Based on your interests and goals, our AI has generated these learning paths for you.
-                  Each path is carefully curated with a sequence of courses to help you achieve your learning objectives.
+                  Based on your challenge, here are curated learning paths to help you build relevant skills and knowledge.
                 </p>
               </div>
 
@@ -230,7 +294,7 @@ const AILearningPath = () => {
                           </div>
                           <div className="flex items-center text-sm">
                             <Book className="h-4 w-4 mr-1" />
-                            {path.steps.length} courses
+                            {path.steps.length} modules
                           </div>
                         </div>
                       </div>
@@ -260,7 +324,7 @@ const AILearningPath = () => {
                       <div className="flex justify-between items-center">
                         <div className="flex items-center text-green-600">
                           <CheckCircle className="h-4 w-4 mr-1" />
-                          <span className="text-sm">AI-optimized path</span>
+                          <span className="text-sm">AI-optimized for your challenge</span>
                         </div>
                         <Button className="bg-brand-blue hover:bg-brand-dark">
                           Start This Path
