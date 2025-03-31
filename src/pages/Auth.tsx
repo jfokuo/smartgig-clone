@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Layout from "@/components/layout/Layout";
 import { useToast } from "@/hooks/use-toast";
+import { AlertCircle } from "lucide-react";
 
 const Auth = () => {
   const { signIn, signUp, loading } = useAuth();
@@ -27,6 +28,8 @@ const Auth = () => {
     email: "",
     password: "",
   });
+  
+  const [signupSuccess, setSignupSuccess] = useState(false);
   
   const from = (location.state as any)?.from?.pathname || "/";
 
@@ -72,10 +75,7 @@ const Auth = () => {
     
     try {
       await signUp(authData.email, authData.password);
-      toast({
-        title: "Check your email",
-        description: "We've sent you a confirmation link. Please check your email and follow the instructions.",
-      });
+      setSignupSuccess(true);
     } catch (error) {
       console.error("Sign up error:", error);
       // Error handling is already in the useAuth hook
@@ -86,14 +86,24 @@ const Auth = () => {
     <Layout>
       <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
         <Card className="w-full max-w-md">
-          <Tabs defaultValue="signin">
+          <Tabs defaultValue={signupSuccess ? "success" : "signin"}>
             <CardHeader>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
+              {!signupSuccess ? (
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+              ) : (
+                <div className="flex justify-center">
+                  <Button variant="ghost" onClick={() => setSignupSuccess(false)}>
+                    Back to Sign In
+                  </Button>
+                </div>
+              )}
               <CardDescription className="mt-4">
-                Sign in to your account or create a new one to access your AI projects.
+                {!signupSuccess 
+                  ? "Sign in to your account or create a new one to access your AI projects."
+                  : "Your account has been created successfully."}
               </CardDescription>
             </CardHeader>
             
@@ -166,6 +176,37 @@ const Auth = () => {
                     </Button>
                   </div>
                 </form>
+              </TabsContent>
+
+              <TabsContent value="success">
+                <div className="space-y-4 py-4">
+                  <div className="rounded-lg bg-green-50 p-4 text-green-800 dark:bg-green-900/30 dark:text-green-200">
+                    <div className="flex items-center space-x-2">
+                      <AlertCircle className="h-5 w-5" />
+                      <h3 className="font-semibold">Email confirmation required</h3>
+                    </div>
+                    <div className="mt-2 text-sm">
+                      <p>
+                        Please check your email ({authData.email}) for a confirmation link. 
+                        You need to confirm your email before you can sign in.
+                      </p>
+                      <p className="mt-2">
+                        If you don't see the email, check your spam folder. For testing purposes,
+                        you can also disable email confirmation in the Supabase dashboard.
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      setSignupSuccess(false);
+                      setAuthData({ email: "", password: "" });
+                    }}
+                  >
+                    Return to Sign In
+                  </Button>
+                </div>
               </TabsContent>
             </CardContent>
             
