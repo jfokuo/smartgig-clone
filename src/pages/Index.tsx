@@ -184,41 +184,47 @@ const Index = () => {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="p-4 rounded-full bg-brand-light">
-                  <Search className="h-8 w-8 text-brand-blue" />
+            <Link to="/gigs" className="group">
+              <div className="text-center transition-transform transform hover:scale-105">
+                <div className="flex justify-center mb-4">
+                  <div className="p-4 rounded-full bg-brand-light group-hover:bg-brand-blue/20">
+                    <Search className="h-8 w-8 text-brand-blue" />
+                  </div>
                 </div>
+                <h3 className="text-xl font-semibold mb-2">1. Find</h3>
+                <p className="text-gray-600">
+                  Browse our marketplace of expert educators and find the perfect match for your learning needs.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">1. Find</h3>
-              <p className="text-gray-600">
-                Browse our marketplace of expert educators and find the perfect match for your learning needs.
-              </p>
-            </div>
+            </Link>
 
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="p-4 rounded-full bg-brand-light">
-                  <Brain className="h-8 w-8 text-brand-blue" />
+            <Link to="/gigs" className="group">
+              <div className="text-center transition-transform transform hover:scale-105">
+                <div className="flex justify-center mb-4">
+                  <div className="p-4 rounded-full bg-brand-light group-hover:bg-brand-blue/20">
+                    <Brain className="h-8 w-8 text-brand-blue" />
+                  </div>
                 </div>
+                <h3 className="text-xl font-semibold mb-2">2. Connect</h3>
+                <p className="text-gray-600">
+                  Communicate directly with educators to discuss your specific requirements and goals.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">2. Connect</h3>
-              <p className="text-gray-600">
-                Communicate directly with educators to discuss your specific requirements and goals.
-              </p>
-            </div>
+            </Link>
 
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <div className="p-4 rounded-full bg-brand-light">
-                  <Sparkles className="h-8 w-8 text-brand-blue" />
+            <Link to="/ai-path" className="group">
+              <div className="text-center transition-transform transform hover:scale-105">
+                <div className="flex justify-center mb-4">
+                  <div className="p-4 rounded-full bg-brand-light group-hover:bg-brand-blue/20">
+                    <Sparkles className="h-8 w-8 text-brand-blue" />
+                  </div>
                 </div>
+                <h3 className="text-xl font-semibold mb-2">3. Learn</h3>
+                <p className="text-gray-600">
+                  Enjoy interactive, engaging educational content tailored specifically to your learning style.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">3. Learn</h3>
-              <p className="text-gray-600">
-                Enjoy interactive, engaging educational content tailored specifically to your learning style.
-              </p>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
