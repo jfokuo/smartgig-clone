@@ -140,97 +140,37 @@ const AILearningPath = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">AI Problem-Solving Assistant</h1>
-            <p className="text-xl text-gray-600 mb-6">
-              Describe your challenge, and our AI will help with practical solutions and learning resources.
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-2">AI Problem Solver</h1>
+            <p className="text-lg text-gray-600">
+              Describe your challenge, and get a simple solution.
             </p>
-            <div className="flex justify-center">
-              <div className="p-3 rounded-full bg-brand-light">
-                <Brain className="h-10 w-10 text-brand-blue" />
-              </div>
-            </div>
           </div>
 
-          <Card className="mb-8">
-            <CardContent className="p-6">
+          <Card className="mb-6">
+            <CardContent className="p-5">
               <form onSubmit={(e) => {
                 e.preventDefault();
                 handleGeneratePath();
               }}>
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div>
-                    <Label htmlFor="challenge" className="text-lg font-medium flex items-center">
-                      <HelpCircle className="h-5 w-5 mr-2 text-brand-blue" />
+                    <Label htmlFor="challenge" className="text-lg font-medium">
                       What problem are you trying to solve?
                     </Label>
                     <Textarea
                       id="challenge"
-                      placeholder="Describe your challenge, error, or topic you need help with..."
+                      placeholder="Describe your challenge, error, or question..."
                       className="mt-2"
                       value={challenge}
                       onChange={(e) => setChallenge(e.target.value)}
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <Label htmlFor="level" className="text-lg font-medium flex items-center">
-                        <Target className="h-5 w-5 mr-2 text-brand-blue" />
-                        Your expertise level
-                      </Label>
-                      <Select value={level} onValueChange={setLevel}>
-                        <SelectTrigger id="level" className="mt-2">
-                          <SelectValue placeholder="Select level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="beginner">Beginner</SelectItem>
-                          <SelectItem value="intermediate">Intermediate</SelectItem>
-                          <SelectItem value="advanced">Advanced</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="style" className="text-lg font-medium flex items-center">
-                        <BookOpen className="h-5 w-5 mr-2 text-brand-blue" />
-                        Learning style
-                      </Label>
-                      <Select value={learningStyle} onValueChange={setLearningStyle}>
-                        <SelectTrigger id="style" className="mt-2">
-                          <SelectValue placeholder="Select style" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="practical">Practical (code examples)</SelectItem>
-                          <SelectItem value="conceptual">Conceptual (theory first)</SelectItem>
-                          <SelectItem value="visual">Visual (diagrams & visuals)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="goal" className="text-lg font-medium flex items-center">
-                        <Lightbulb className="h-5 w-5 mr-2 text-brand-blue" />
-                        Goal type
-                      </Label>
-                      <Select value={goalType} onValueChange={setGoalType}>
-                        <SelectTrigger id="goal" className="mt-2">
-                          <SelectValue placeholder="Select goal" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="problem">Fix a specific problem</SelectItem>
-                          <SelectItem value="learn">Learn a new concept</SelectItem>
-                          <SelectItem value="build">Build a new feature</SelectItem>
-                          <SelectItem value="optimize">Optimize existing code</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
                   <Button 
                     type="submit" 
-                    className="w-full py-6 bg-brand-blue hover:bg-brand-dark"
+                    className="w-full py-5 bg-brand-blue hover:bg-brand-dark"
                     disabled={isGenerating || !challenge.trim()}
                   >
                     {isGenerating ? (
@@ -238,7 +178,7 @@ const AILearningPath = () => {
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-5 w-5" />
-                        Generate Solutions
+                        Generate Solution
                       </>
                     )}
                   </Button>
@@ -248,88 +188,48 @@ const AILearningPath = () => {
           </Card>
 
           {aiResponse && (
-            <Card className="mb-8 border-2 border-green-100">
-              <CardContent className="p-6">
-                <div className="flex items-center mb-4">
-                  <Code className="h-6 w-6 text-brand-blue mr-2" />
-                  <h2 className="text-2xl font-bold">Practical Solution</h2>
+            <Card className="mb-6 border-2 border-green-100">
+              <CardContent className="p-5">
+                <div className="flex items-center mb-2">
+                  <Lightbulb className="h-5 w-5 text-brand-blue mr-2" />
+                  <h2 className="text-xl font-bold">Solution</h2>
                 </div>
-                <div className="bg-gray-50 p-5 rounded-lg mb-4">
-                  <pre className="whitespace-pre-wrap text-sm font-mono">{aiResponse}</pre>
+                <div className="bg-gray-50 p-4 rounded-lg whitespace-pre-wrap">
+                  {aiResponse}
                 </div>
-                <p className="text-sm text-gray-500 italic">
-                  This solution is generated based on your specific challenge and expertise level.
-                </p>
               </CardContent>
             </Card>
           )}
 
           {generatedPaths.length > 0 && (
             <>
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold mb-6 flex items-center">
-                  <BookOpen className="h-6 w-6 mr-2 text-brand-blue" />
-                  Recommended Learning Resources
+              <div className="mb-4">
+                <h2 className="text-xl font-bold mb-3 flex items-center">
+                  <BookOpen className="h-5 w-5 mr-2 text-brand-blue" />
+                  Recommended Resources
                 </h2>
-                <p className="text-gray-600 mb-6">
-                  Based on your challenge, here are curated learning paths to help you build relevant skills and knowledge.
-                </p>
               </div>
 
-              <div className="space-y-8">
+              <div className="space-y-4">
                 {generatedPaths.map((path) => (
-                  <Card key={path.id} className="border-2 border-brand-light hover:border-brand-blue transition-all">
-                    <CardContent className="p-6">
-                      <div className="mb-6">
-                        <h3 className="text-2xl font-bold mb-2">{path.title}</h3>
-                        <p className="text-gray-600 mb-4">{path.description}</p>
-                        <div className="flex flex-wrap gap-4">
-                          <div className="flex items-center text-sm">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {path.duration}
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <Target className="h-4 w-4 mr-1" />
-                            {path.level} level
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <Book className="h-4 w-4 mr-1" />
-                            {path.steps.length} modules
-                          </div>
+                  <Card key={path.id} className="hover:border-brand-blue transition-all">
+                    <CardContent className="p-4">
+                      <h3 className="text-lg font-bold mb-1">{path.title}</h3>
+                      <p className="text-gray-600 text-sm mb-2">{path.description}</p>
+                      <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-3">
+                        <div className="flex items-center">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {path.duration}
+                        </div>
+                        <div className="flex items-center">
+                          <Target className="h-3 w-3 mr-1" />
+                          {path.level}
                         </div>
                       </div>
 
-                      <Separator className="my-4" />
-
-                      <div className="space-y-4 mb-6">
-                        <h4 className="font-semibold text-lg">Learning Journey</h4>
-                        {path.steps.map((step, index) => (
-                          <div key={index} className="flex items-start">
-                            <div className="bg-brand-blue text-white rounded-full h-6 w-6 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <h5 className="font-medium mb-1">{step.title}</h5>
-                              <Link 
-                                to={`/gig/${step.gigId}`} 
-                                className="text-brand-blue hover:underline text-sm flex items-center"
-                              >
-                                {step.gigTitle} <ChevronRight className="h-3 w-3 ml-1" />
-                              </Link>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center text-green-600">
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          <span className="text-sm">AI-optimized for your challenge</span>
-                        </div>
-                        <Button className="bg-brand-blue hover:bg-brand-dark">
-                          Start This Path
-                        </Button>
-                      </div>
+                      <Button className="w-full bg-brand-blue hover:bg-brand-dark text-sm py-1 h-8">
+                        Start Learning
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}

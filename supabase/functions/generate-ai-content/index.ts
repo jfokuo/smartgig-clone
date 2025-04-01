@@ -25,8 +25,8 @@ serve(async (req) => {
       );
     }
 
-    // Generate a more helpful, solution-oriented response
-    const generateHelpfulResponse = (prompt: string) => {
+    // Generate a simple, solution-oriented response
+    const generateSimpleResponse = (prompt: string) => {
       // Extract keywords from prompt to determine the type of help needed
       const keywords = prompt.toLowerCase();
       let responseType = "general";
@@ -45,105 +45,56 @@ serve(async (req) => {
       let content = "";
       switch (responseType) {
         case "troubleshooting":
-          content = `Based on your problem with "${prompt}", here's a step-by-step troubleshooting guide:\n\n` +
-            `1. First, identify the exact error message or symptoms\n` +
-            `2. Check for common causes: syntax errors, missing dependencies, or configuration issues\n` +
-            `3. Try these specific solutions:\n` +
-            `   - Verify all required libraries are installed and up-to-date\n` +
-            `   - Check documentation for known issues related to your error\n` +
-            `   - Clear cache and restart your development environment\n` +
-            `4. If the issue persists, here are advanced debugging techniques:\n` +
-            `   - Use console logging at key points to trace execution flow\n` +
-            `   - Review recent code changes that might have introduced the bug\n` +
-            `   - Check for similar issues in community forums like Stack Overflow\n\n` +
-            `For more personalized help, share the specific error messages and code snippets.`;
+          content = `Here's how to fix "${prompt}":\n\n` +
+            `1. Check for: syntax errors, missing imports, or configuration issues\n` +
+            `2. Try these solutions:\n` +
+            `   - Restart your development server\n` +
+            `   - Verify all dependencies are installed\n` +
+            `   - Check the console for error details\n` +
+            `3. If still having issues, search the error message online or ask in a forum`;
           break;
           
         case "tutorial":
-          content = `Here's a practical guide to help you with "${prompt}":\n\n` +
-            `Step 1: Set up your environment\n` +
-            `- Make sure you have all prerequisites installed\n` +
-            `- Configure your project with the necessary dependencies\n\n` +
-            `Step 2: Understand the core concepts\n` +
-            `- Learn about the key components involved\n` +
-            `- Review best practices and common patterns\n\n` +
-            `Step 3: Implementation\n` +
-            `- Start with a basic working example\n` +
-            `- Break down the task into smaller, manageable pieces\n` +
-            `- Test each component before moving forward\n\n` +
-            `Step 4: Testing and refinement\n` +
-            `- Verify your implementation works as expected\n` +
-            `- Optimize for performance and readability\n` +
-            `- Address edge cases and potential issues\n\n` +
-            `Resources:\n` +
-            `- Official documentation is often the best starting point\n` +
-            `- Community forums and tutorials can provide practical examples\n` +
-            `- Consider courses or books for deeper understanding`;
+          content = `Quick guide for "${prompt}":\n\n` +
+            `1. Set up your environment\n` +
+            `2. Create the basic structure\n` +
+            `3. Implement the core functionality\n` +
+            `4. Test and refine\n\n` +
+            `Pro tip: Start with a minimal working example and build up from there!`;
           break;
           
         case "optimization":
-          content = `Here are strategies to improve and optimize "${prompt}":\n\n` +
-            `Performance Optimization:\n` +
-            `- Identify and eliminate bottlenecks through profiling\n` +
-            `- Implement caching strategies where appropriate\n` +
-            `- Consider lazy loading and code splitting\n` +
-            `- Optimize database queries and data structures\n\n` +
-            `Code Quality Improvements:\n` +
-            `- Refactor repetitive code into reusable functions/components\n` +
-            `- Improve naming conventions for better readability\n` +
-            `- Add comprehensive comments and documentation\n` +
-            `- Implement proper error handling\n\n` +
-            `User Experience Enhancements:\n` +
-            `- Streamline workflows to reduce user friction\n` +
-            `- Add helpful feedback and informative messages\n` +
-            `- Ensure accessibility for all users\n` +
-            `- Gather user feedback and iterate based on insights`;
+          content = `Tips to improve "${prompt}":\n\n` +
+            `1. Focus on the most critical performance bottlenecks first\n` +
+            `2. Consider caching frequently accessed data\n` +
+            `3. Simplify complex logic and remove any redundant code\n` +
+            `4. Use appropriate data structures for your specific use case`;
           break;
           
         case "educational":
-          content = `Learning Guide: ${prompt}\n\n` +
-            `Core Concepts to Understand:\n` +
-            `- Fundamental principles and terminology\n` +
-            `- How the different components interact\n` +
-            `- Historical context and evolution of these technologies\n\n` +
-            `Practical Learning Path:\n` +
-            `1. Begin with the basics - focus on foundational knowledge\n` +
-            `2. Build simple projects to reinforce concepts\n` +
-            `3. Study real-world examples and analyze existing solutions\n` +
-            `4. Join communities to learn from others' experiences\n` +
-            `5. Teach concepts to others to solidify your understanding\n\n` +
-            `Recommended Resources:\n` +
-            `- Interactive courses that combine theory with practice\n` +
-            `- Official documentation provides technical accuracy\n` +
-            `- Books for deep, comprehensive understanding\n` +
-            `- Video tutorials for visual demonstrations\n` +
-            `- Project-based learning for practical application`;
+          content = `To understand "${prompt}":\n\n` +
+            `1. Start with the basic concepts\n` +
+            `2. Practice with simple examples\n` +
+            `3. Build small projects to reinforce your learning\n` +
+            `4. Join communities and forums to learn from others`;
           break;
           
         default:
-          content = `Here's how I can help with "${prompt}":\n\n` +
-            `Analysis:\n` +
-            `- Let's break down the key aspects of your query\n` +
-            `- Identifying the core challenges and opportunities\n\n` +
-            `Practical Solutions:\n` +
-            `- Multiple approaches to address your specific needs\n` +
-            `- Trade-offs and considerations for each option\n` +
-            `- Step-by-step implementation guidance\n\n` +
-            `Additional Resources:\n` +
-            `- Tools and technologies that might be helpful\n` +
-            `- Community resources for ongoing support\n` +
-            `- Best practices to follow for optimal results\n\n` +
-            `Feel free to ask follow-up questions for more specific guidance!`;
+          content = `Solution for "${prompt}":\n\n` +
+            `1. Break down the problem into smaller, manageable parts\n` +
+            `2. Address each part systematically\n` +
+            `3. Test your solution frequently\n` +
+            `4. Refine based on results`;
       }
       
       return {
         content,
         responseType,
-        additionalDetails: "This response is tailored to provide practical, solution-oriented guidance based on your prompt."
+        additionalDetails: "Simple, practical solution based on your prompt."
       };
     };
 
-    const aiResponse = generateHelpfulResponse(prompt);
+    const aiResponse = generateSimpleResponse(prompt);
     
     return new Response(
       JSON.stringify(aiResponse),
