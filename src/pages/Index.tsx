@@ -57,6 +57,12 @@ const categories = [
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+
+  // Filter gigs based on active tab
+  const filteredGigs = activeTab === "all" 
+    ? featuredGigs 
+    : featuredGigs.filter(gig => gig.category.toLowerCase() === activeTab);
 
   return (
     <Layout>
@@ -125,18 +131,18 @@ const Index = () => {
             </Link>
           </div>
 
-          <Tabs defaultValue="all" className="mb-8">
+          <Tabs defaultValue="all" className="mb-8" onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="mathematics">Mathematics</TabsTrigger>
-              <TabsTrigger value="computer-science">Computer Science</TabsTrigger>
-              <TabsTrigger value="language-arts">Language Arts</TabsTrigger>
+              <TabsTrigger value="computer science">Computer Science</TabsTrigger>
+              <TabsTrigger value="language arts">Language Arts</TabsTrigger>
               <TabsTrigger value="science">Science</TabsTrigger>
             </TabsList>
           </Tabs>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredGigs.map((gig) => (
+            {filteredGigs.map((gig) => (
               <Link to={`/gig/${gig.id}`} key={gig.id}>
                 <Card className="overflow-hidden hover:shadow-md transition-all cursor-pointer h-full flex flex-col">
                   <div className="aspect-video relative overflow-hidden">
@@ -172,6 +178,19 @@ const Index = () => {
               </Link>
             ))}
           </div>
+          
+          {filteredGigs.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No gigs found for this category.</p>
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => setActiveTab("all")}
+              >
+                View all gigs
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
