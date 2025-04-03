@@ -11,16 +11,14 @@ import {
   Lightbulb,
   Sparkles,
   Award,
-  Trophy,
-  Medal,
-  Star
+  Brain
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import UserProgress from "@/components/UserProgress";
 
 const AILearningPath = () => {
-  const [challenge, setChallenge] = useState("");
+  const [question, setQuestion] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -40,7 +38,7 @@ const AILearningPath = () => {
         
         if (data && data.length > 0) {
           setTotalChallenges(data.length);
-          // Calculate progress - each challenge is worth 5% progress, max 100%
+          // Calculate progress - each question is worth 5% progress, max 100%
           const newProgress = Math.min(data.length * 5, 100);
           setProgress(newProgress);
         }
@@ -55,34 +53,31 @@ const AILearningPath = () => {
   const handleGenerateSolution = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!challenge.trim()) return;
+    if (!question.trim()) return;
     
     setIsGenerating(true);
     
     try {
       const { data, error } = await supabase.functions.invoke("generate-ai-content", {
-        body: { prompt: challenge },
+        body: { prompt: question },
       });
       
       if (error) throw error;
       
       setAiResponse(data.content);
 
-      // Save the challenge to Supabase
+      // Save the question to Supabase
       const { error: saveError } = await supabase
         .from('AI project')
-        .insert({ content: challenge });
+        .insert({ content: question });
 
       if (saveError) throw saveError;
 
       // Update progress
       setTotalChallenges(prev => prev + 1);
-      // Each challenge is worth 5% progress, max 100%
+      // Each question is worth 5% progress, max 100%
       const newProgress = Math.min((totalChallenges + 1) * 5, 100);
       setProgress(newProgress);
-
-      // Show achievement notification if milestone reached
-      checkForMilestones(newProgress);
 
     } catch (error) {
       console.error("Error generating content:", error);
@@ -96,35 +91,14 @@ const AILearningPath = () => {
     }
   };
 
-  const checkForMilestones = (currentProgress: number) => {
-    const milestones = [
-      { threshold: 5, title: "First Step", description: "You've started your learning journey!" },
-      { threshold: 25, title: "Knowledge Seeker", description: "You're making great progress!" },
-      { threshold: 50, title: "Half Way There", description: "You've reached the halfway mark!" },
-      { threshold: 75, title: "Almost There", description: "You're getting close to mastery!" },
-      { threshold: 100, title: "Learning Master", description: "You've achieved full mastery!" }
-    ];
-
-    // Find the highest milestone reached
-    for (let i = milestones.length - 1; i >= 0; i--) {
-      if (currentProgress >= milestones[i].threshold) {
-        toast({
-          title: `🏆 Achievement Unlocked: ${milestones[i].title}`,
-          description: milestones[i].description,
-        });
-        break;
-      }
-    }
-  };
-
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">AI Problem Solver</h1>
+            <h1 className="text-3xl font-bold mb-2">AI Learning Assistant</h1>
             <p className="text-lg text-gray-600 mb-4">
-              Get solutions for any coding or technical challenge
+              Ask questions and get personalized learning solutions
             </p>
             
             {/* Progress tracking */}
@@ -148,29 +122,29 @@ const AILearningPath = () => {
               <form onSubmit={handleGenerateSolution}>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="challenge" className="text-lg font-medium">
-                      What can I help you with today?
+                    <Label htmlFor="question" className="text-lg font-medium">
+                      What would you like to learn today?
                     </Label>
                     <Textarea
-                      id="challenge"
-                      placeholder="Describe your challenge or ask any technical question..."
+                      id="question"
+                      placeholder="Ask any coding question, request a code explanation, or explore a new concept..."
                       className="mt-2 min-h-[120px]"
-                      value={challenge}
-                      onChange={(e) => setChallenge(e.target.value)}
+                      value={question}
+                      onChange={(e) => setQuestion(e.target.value)}
                     />
                   </div>
 
                   <Button 
                     type="submit" 
                     className="w-full py-5 bg-brand-blue hover:bg-brand-dark"
-                    disabled={isGenerating || !challenge.trim()}
+                    disabled={isGenerating || !question.trim()}
                   >
                     {isGenerating ? (
-                      <>Generating Solution...</>
+                      <>Generating Learning Content...</>
                     ) : (
                       <>
                         <Sparkles className="mr-2 h-5 w-5" />
-                        Get Solution
+                        Generate Learning Content
                       </>
                     )}
                   </Button>
@@ -184,7 +158,7 @@ const AILearningPath = () => {
               <CardContent className="p-5">
                 <div className="flex items-center mb-2">
                   <Lightbulb className="h-5 w-5 text-brand-blue mr-2" />
-                  <h2 className="text-xl font-bold">Solution</h2>
+                  <h2 className="text-xl font-bold">Learning Content</h2>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg whitespace-pre-wrap markdown-content">
                   {aiResponse.split('\n').map((line, index) => {
@@ -214,7 +188,7 @@ const AILearningPath = () => {
           
           <div className="text-center text-gray-500 text-sm mt-8">
             <p>Ask anything related to programming, development, or technical concepts.</p>
-            <p>I'm constantly learning to provide better solutions!</p>
+            <p>Our AI Learning Assistant helps you understand complex topics through personalized explanations.</p>
           </div>
         </div>
       </div>
