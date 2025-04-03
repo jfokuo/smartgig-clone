@@ -16,6 +16,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import UserProgress from "@/components/UserProgress";
+import LearningGoalSelector from "@/components/LearningGoalSelector";
+import RecommendedLearningPath from "@/components/RecommendedLearningPath";
+import { generateLearningPathForGoal, LearningPathSection } from "@/utils/learning-paths";
 
 const AILearningPath = () => {
   const [question, setQuestion] = useState("");
@@ -23,12 +26,15 @@ const AILearningPath = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [totalChallenges, setTotalChallenges] = useState(0);
+  const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+  const [learningPath, setLearningPath] = useState<LearningPathSection[]>([]);
   const { toast } = useToast();
 
-  // Load user progress on component mount
+  // Load user progress and learning goal on component mount
   useEffect(() => {
-    const fetchUserProgress = async () => {
+    const fetchUserData = async () => {
       try {
+        // Fetch projects to calculate progress
         const { data, error } = await supabase
           .from('AI project')
           .select('*')
@@ -42,13 +48,31 @@ const AILearningPath = () => {
           const newProgress = Math.min(data.length * 5, 100);
           setProgress(newProgress);
         }
+        
+        // Try to get saved learning goal from localStorage
+        const savedGoal = localStorage.getItem('learning_goal');
+        if (savedGoal) {
+          setSelectedGoal(savedGoal);
+          // Generate learning path based on saved goal
+          const generatedPath = generateLearningPathForGoal(savedGoal, data?.length || 0);
+          setLearningPath(generatedPath);
+        }
       } catch (error) {
-        console.error("Error fetching user progress:", error);
+        console.error("Error fetching user data:", error);
       }
     };
 
-    fetchUserProgress();
+    fetchUserData();
   }, []);
+
+  const handleGoalSelection = (goalId: string) => {
+    setSelectedGoal(goalId);
+    // Save selected goal to localStorage
+    localStorage.setItem('learning_goal', goalId);
+    // Generate learning path for the selected goal
+    const generatedPath = generateLearningPathForGoal(goalId, totalChallenges);
+    setLearningPath(generatedPath);
+  };
 
   const handleGenerateSolution = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +102,12 @@ const AILearningPath = () => {
       // Each question is worth 5% progress, max 100%
       const newProgress = Math.min((totalChallenges + 1) * 5, 100);
       setProgress(newProgress);
+      
+      // Update learning path if a goal is selected
+      if (selectedGoal) {
+        const updatedPath = generateLearningPathForGoal(selectedGoal, totalChallenges + 1);
+        setLearningPath(updatedPath);
+      }
 
     } catch (error) {
       console.error("Error generating content:", error);
@@ -110,6 +140,19 @@ const AILearningPath = () => {
               <Progress value={progress} className="h-2" />
             </div>
           </div>
+
+          {/* Learning Goal Selector */}
+          <LearningGoalSelector 
+            onSelectGoal={handleGoalSelection} 
+            selectedGoalId={selectedGoal} 
+          />
+
+          {/* Personalized Learning Path */}
+          <RecommendedLearningPath 
+            goalId={selectedGoal}
+            learningPath={learningPath}
+            currentProgress={progress}
+          />
 
           {/* User Progress Component */}
           <UserProgress 
