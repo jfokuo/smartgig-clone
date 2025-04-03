@@ -80,13 +80,33 @@ const Projects = () => {
 
     setIsGenerating(true);
     try {
+      // Make sure user is authenticated before proceeding
+      if (!user) {
+        throw new Error("You must be logged in to generate content");
+      }
+
       const { data, error } = await supabase.functions.invoke("generate-ai-content", {
         body: { prompt: prompt.trim() },
       });
 
       if (error) throw error;
 
-      createProjectMutation.mutate(data.content);
+      // Create the project with user_id explicitly set
+      await supabase
+        .from('AI project')
+        .insert({
+          content: data.content,
+          user_id: user.id
+        });
+
+      // Invalidate query to refresh the projects list
+      queryClient.invalidateQueries({ queryKey: ["ai-projects"] });
+      
+      toast({
+        title: "Content generated",
+        description: "Your AI content has been generated and saved successfully.",
+      });
+      
       setPrompt("");
     } catch (error) {
       console.error("Error generating content:", error);

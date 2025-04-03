@@ -22,9 +22,16 @@ export const fetchUserProjects = async (): Promise<AIProject[]> => {
 };
 
 export const createProject = async (content: string): Promise<AIProject> => {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  
+  if (userError) {
+    console.error("Error getting user:", userError);
+    throw userError;
+  }
+
   const { data, error } = await supabase
     .from("AI project")
-    .insert([{ content }])
+    .insert([{ content, user_id: userData.user?.id }])
     .select()
     .single();
 

@@ -19,6 +19,8 @@ import UserProgress from "@/components/UserProgress";
 import LearningGoalSelector from "@/components/LearningGoalSelector";
 import RecommendedLearningPath from "@/components/RecommendedLearningPath";
 import { generateLearningPathForGoal, LearningPathSection } from "@/utils/learning-paths";
+import { useAuth } from "@/hooks/use-auth";
+import { useNavigate } from "react-router-dom";
 
 const AILearningPath = () => {
   const [question, setQuestion] = useState("");
@@ -30,6 +32,20 @@ const AILearningPath = () => {
   const [learningPath, setLearningPath] = useState<LearningPathSection[]>([]);
   const [selectedStep, setSelectedStep] = useState<{id: string, title: string} | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Check if user is authenticated
+  useEffect(() => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to access the AI learning path.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+    }
+  }, [user, navigate, toast]);
 
   // Load user progress, learning goal, and saved query on component mount
   useEffect(() => {
@@ -98,20 +114,24 @@ const AILearningPath = () => {
     setIsGenerating(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke("generate-ai-content", {
+      // Generate AI content using Supabase Edge Function
+      const { data: aiData, error: aiError } = await supabase.functions.invoke("generate-ai-content", {
         body: { prompt: question },
       });
       
-      if (error) throw error;
+      if (aiError) throw aiError;
       
-      setAiResponse(data.content);
+      setAiResponse(aiData.content);
 
       // Save the question to Supabase
       const { error: saveError } = await supabase
         .from('AI project')
         .insert({ content: question });
 
-      if (saveError) throw saveError;
+      if (saveError) {
+        console.error("Error saving to AI project:", saveError);
+        throw saveError;
+      }
 
       // Update progress
       setTotalChallenges(prev => prev + 1);
@@ -128,11 +148,16 @@ const AILearningPath = () => {
       // Clear the stored query after successful generation
       localStorage.removeItem('learning_query');
 
-    } catch (error) {
+      toast({
+        title: "Learning content generated",
+        description: "Your personalized learning content has been created successfully.",
+      });
+
+    } catch (error: any) {
       console.error("Error generating content:", error);
       toast({
         title: "Generation failed",
-        description: "Failed to generate AI solution. Please try again.",
+        description: error.message || "Failed to generate AI solution. Please try again.",
         variant: "destructive",
       });
     } finally {
