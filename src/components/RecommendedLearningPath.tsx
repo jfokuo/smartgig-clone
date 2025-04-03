@@ -2,7 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Route, BookOpen, Code, Brain } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Check, Sparkles, Route, BookOpen, Code, Brain, Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface LearningStep {
   id: string;
@@ -22,13 +25,18 @@ interface RecommendedLearningPathProps {
   goalId: string | null;
   learningPath: LearningPathSection[];
   currentProgress: number;
+  onSelectStep: (stepId: string, title: string) => void;
 }
 
 const RecommendedLearningPath: React.FC<RecommendedLearningPathProps> = ({
   goalId,
   learningPath,
-  currentProgress
+  currentProgress,
+  onSelectStep
 }) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   // Calculate which steps should be unlocked based on progress
   const calculateUnlocked = (index: number, stepIndex: number) => {
     const totalSteps = learningPath.reduce((acc, section) => acc + section.steps.length, 0);
@@ -36,6 +44,36 @@ const RecommendedLearningPath: React.FC<RecommendedLearningPathProps> = ({
     const percentPerStep = 100 / totalSteps;
     
     return currentProgress >= (stepNumber - 1) * percentPerStep;
+  };
+
+  const handleStepClick = (step: LearningStep, isUnlocked: boolean, sectionIndex: number, stepIndex: number) => {
+    if (!isUnlocked) {
+      toast({
+        title: "Step locked",
+        description: "Complete previous steps to unlock this content.",
+        variant: "warning"
+      });
+      return;
+    }
+
+    if (step.completed) {
+      toast({
+        title: "Step already completed",
+        description: "You've already completed this step. Review it again?",
+      });
+    }
+
+    // Track the step selection by passing the step ID and title to parent component
+    onSelectStep(step.id, step.title);
+
+    // Auto-generate a query based on the step title and description
+    const query = `Help me learn about ${step.title}: ${step.description}`;
+    
+    // Store the query in localStorage to be used in the learning form
+    localStorage.setItem('learning_query', query);
+    
+    // Focus on the learning form input (will be handled by the parent component)
+    document.getElementById('question')?.focus();
   };
 
   if (!goalId || learningPath.length === 0) {
@@ -77,10 +115,11 @@ const RecommendedLearningPath: React.FC<RecommendedLearningPathProps> = ({
                   return (
                     <div 
                       key={step.id} 
-                      className={`p-3 rounded-lg border ${
-                        step.completed ? 'bg-green-50 border-green-200' : 
-                        isUnlocked ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-200 opacity-70'
+                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        step.completed ? 'bg-green-50 border-green-200 hover:bg-green-100' : 
+                        isUnlocked ? 'bg-white border-gray-200 hover:border-brand-blue hover:shadow-sm' : 'bg-gray-50 border-gray-200 opacity-70'
                       }`}
+                      onClick={() => handleStepClick(step, isUnlocked, sectionIndex, stepIndex)}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${
@@ -89,10 +128,12 @@ const RecommendedLearningPath: React.FC<RecommendedLearningPathProps> = ({
                         }`}>
                           {step.completed ? (
                             <Check className="h-4 w-4 text-white" />
-                          ) : (
+                          ) : isUnlocked ? (
                             <span className="text-xs text-white font-bold">
                               {sectionIndex * section.steps.length + stepIndex + 1}
                             </span>
+                          ) : (
+                            <Lock className="h-3 w-3 text-white" />
                           )}
                         </div>
                         <div className="flex-1">
@@ -112,6 +153,19 @@ const RecommendedLearningPath: React.FC<RecommendedLearningPathProps> = ({
                             <span className="text-xs text-gray-500">
                               {step.estimatedTime}
                             </span>
+                            {isUnlocked && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-xs text-brand-blue hover:text-brand-blue/90 ml-auto"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStepClick(step, isUnlocked, sectionIndex, stepIndex);
+                                }}
+                              >
+                                {step.completed ? "Review" : "Start"}
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>

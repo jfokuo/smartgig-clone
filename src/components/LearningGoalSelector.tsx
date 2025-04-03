@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Target, Code, BookOpen, Brain, Star, Building, Server, Database } from "lucide-react";
+import { Target, Code, BookOpen, Brain, Star, Building, Server, Database, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type LearningGoal = {
   id: string;
@@ -71,25 +72,35 @@ const LearningGoalSelector: React.FC<LearningGoalSelectorProps> = ({
       <CardContent>
         <div className="flex flex-wrap gap-2 mb-4">
           {learningGoals.map((goal) => (
-            <Badge
-              key={goal.id}
-              variant={selectedGoalId === goal.id ? "default" : "outline"}
-              className={`flex items-center gap-1 px-3 py-2 cursor-pointer hover:bg-gray-100 ${
-                selectedGoalId === goal.id ? "bg-brand-blue text-white hover:bg-brand-blue/90" : ""
-              }`}
-              onClick={() => onSelectGoal(goal.id)}
-              title={goal.description}
-            >
-              {goal.icon}
-              {goal.title}
-            </Badge>
+            <TooltipProvider key={goal.id}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant={selectedGoalId === goal.id ? "default" : "outline"}
+                    className={`flex items-center gap-1 px-3 py-2 cursor-pointer hover:bg-gray-100 ${
+                      selectedGoalId === goal.id ? "bg-brand-blue text-white hover:bg-brand-blue/90" : ""
+                    }`}
+                    onClick={() => onSelectGoal(goal.id)}
+                  >
+                    {goal.icon}
+                    {goal.title}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{goal.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))}
         </div>
-        <p className="text-sm text-gray-500 italic">
-          {selectedGoalId 
-            ? "We'll personalize your learning path based on this goal" 
-            : "Select a goal to get personalized learning recommendations"}
-        </p>
+        <div className="flex items-start gap-2">
+          <Info className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-gray-500 italic">
+            {selectedGoalId 
+              ? "We'll personalize your learning path based on this goal. Click on any step in the path below to start learning." 
+              : "Select a goal to get personalized learning recommendations"}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

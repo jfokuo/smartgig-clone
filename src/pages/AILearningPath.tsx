@@ -28,9 +28,10 @@ const AILearningPath = () => {
   const [totalChallenges, setTotalChallenges] = useState(0);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [learningPath, setLearningPath] = useState<LearningPathSection[]>([]);
+  const [selectedStep, setSelectedStep] = useState<{id: string, title: string} | null>(null);
   const { toast } = useToast();
 
-  // Load user progress and learning goal on component mount
+  // Load user progress, learning goal, and saved query on component mount
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -57,6 +58,12 @@ const AILearningPath = () => {
           const generatedPath = generateLearningPathForGoal(savedGoal, data?.length || 0);
           setLearningPath(generatedPath);
         }
+
+        // Check if there's a saved learning query
+        const savedQuery = localStorage.getItem('learning_query');
+        if (savedQuery) {
+          setQuestion(savedQuery);
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -72,6 +79,15 @@ const AILearningPath = () => {
     // Generate learning path for the selected goal
     const generatedPath = generateLearningPathForGoal(goalId, totalChallenges);
     setLearningPath(generatedPath);
+  };
+
+  const handleStepSelection = (stepId: string, title: string) => {
+    setSelectedStep({id: stepId, title: title});
+    toast({
+      title: "Learning path step selected",
+      description: `You've selected "${title}" - The form below has been pre-filled for you.`,
+      variant: "info"
+    });
   };
 
   const handleGenerateSolution = async (e: React.FormEvent) => {
@@ -108,6 +124,9 @@ const AILearningPath = () => {
         const updatedPath = generateLearningPathForGoal(selectedGoal, totalChallenges + 1);
         setLearningPath(updatedPath);
       }
+
+      // Clear the stored query after successful generation
+      localStorage.removeItem('learning_query');
 
     } catch (error) {
       console.error("Error generating content:", error);
@@ -152,6 +171,7 @@ const AILearningPath = () => {
             goalId={selectedGoal}
             learningPath={learningPath}
             currentProgress={progress}
+            onSelectStep={handleStepSelection}
           />
 
           {/* User Progress Component */}
@@ -159,6 +179,20 @@ const AILearningPath = () => {
             totalChallenges={totalChallenges} 
             progress={progress}
           />
+
+          {selectedStep && (
+            <div className="mb-4">
+              <div className="bg-brand-blue/5 border border-brand-blue/20 rounded-lg p-4">
+                <h3 className="text-lg font-medium flex items-center">
+                  <Brain className="w-5 h-5 mr-2 text-brand-blue" />
+                  Currently Learning: {selectedStep.title}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Submit your question below to get detailed learning content on this topic.
+                </p>
+              </div>
+            </div>
+          )}
 
           <Card className="mb-6">
             <CardContent className="p-5">
